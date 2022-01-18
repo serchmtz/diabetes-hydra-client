@@ -176,8 +176,7 @@ const diabetes = {
       },
       
       "elevation": "small",
-      "round": "xsmall",
-      "size": "xsmall"
+      "round": "xsmall"
     }
   },
   "layer": {

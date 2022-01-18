@@ -7,7 +7,7 @@ interface Props {}
 
 const HydraApiView: React.FC<Props> = ({ children }) => {
   const { loading, hypermedia, hydraClass } = useHydra();
-  console.log("hydraApiview render");
+  // console.log("hydraApiview render");
   return (
     <Box justify="center" align="center">
       {loading ? (

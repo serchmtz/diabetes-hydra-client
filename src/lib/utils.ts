@@ -1,13 +1,4 @@
-import HydraClientFactory, { IResource, hydra } from "@hydra-cg/heracles.ts";
-
-export const hydraClient = HydraClientFactory.configure()
-  .withDefaults()
-  .withAllLinks()
-  .andCreate();
-
-export const getApiDoc = async () => {
-  return await hydraClient.getApiDocumentation("http://localhost:8080/api");
-};
+import { IResource, hydra } from "@hydra-cg/heracles.ts";
 
 export function isHydraClass(resource: IResource) {
   return resource.type.contains(hydra.Class);

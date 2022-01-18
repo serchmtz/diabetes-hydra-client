@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import jsonld from "jsonld";
 import { useHydra } from "../lib/HydraContext";
 import HydraAnchor from "./HydraAnchor";
+
 interface Props {
   hypermedia: IHypermediaContainer | null;
 }
@@ -31,13 +32,13 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
     if (!hypermedia || !apiDoc) return;
     const init = async () => {
       const res = await hypermedia.json();
-      // const graph = (await jsonld.expand(res))[0];
       const graph = (await jsonld.expand(res))[0];
       // console.log("res: ", res);
       // console.log("graph: ", graph);
       const hclass = apiDoc.supportedClasses
         .ofIri(hypermedia.type.first())
         .first();
+
       const properties = new Array<JSX.Element>();
       const members = new Array<JSX.Element>();
       let i = 0;
@@ -50,6 +51,7 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
           };
           properties.push(
             <NameValuePair
+              key={i++}
               name={
                 <Tip
                   content={
@@ -60,21 +62,25 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
                     </Box>
                   }
                 >
-                  <Text size="12pt" style={{ cursor: "help" }}>
+                  <Text size="12pt" style={{ cursor: "help" }} weight="bold">
                     {prop.property.displayName}
                   </Text>
                 </Tip>
               }
             >
-              {val["@id"] ? (                
-                <HydraAnchor iri={val["@id"]} size="12pt">
+              {val["@id"] ? (
+                <HydraAnchor iri={val["@id"]} size="12pt" withOperations>
                   {val["@id"]}
                 </HydraAnchor>
               ) : (
                 <Tip
                   content={
-                    <Box>
-                      <Text size="10pt" color="status-critical">
+                    <Box overflow="auto">
+                      <Text
+                        size="10pt"
+                        color="status-critical"
+                        wordBreak="break-word"
+                      >
                         {prop.property.valuesOfType.first().iri}
                       </Text>
                     </Box>
@@ -94,7 +100,7 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
         i = 0;
         for (const member of hypermedia.members) {
           members.push(
-            <HydraAnchor iri={member.iri} key={i++} size="12pt">
+            <HydraAnchor iri={member.iri} key={i++} size="12pt" withOperations>
               {member.iri}
             </HydraAnchor>
           );
@@ -115,7 +121,14 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
 
   return (
     <Box background="light-1" pad="medium" fill="horizontal">
-      <Heading level="4">{`@id: ${hypermedia.iri}`}</Heading>
+      <Heading level="4">
+        <Box direction="row" gap="small">
+          {"@id:"}
+          <HydraAnchor iri={hypermedia.iri} withOperations>
+            {hypermedia.iri}
+          </HydraAnchor>
+        </Box>
+      </Heading>
       {state && (
         <>
           <Box pad="small" background="light-3" round="small">

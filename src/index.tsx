@@ -2,7 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 // import './index.css';
 import HydraClientApp from "./App";
+import * as dotenv from 'dotenv';
 
+dotenv.config();
 //import reportWebVitals from './reportWebVitals';
 // import { HydraAdmin } from "@api-platform/admin";
 // const Admin = () => <HydraAdmin entrypoint="http://localhost:8080/api" />

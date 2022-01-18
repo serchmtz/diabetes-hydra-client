@@ -25,7 +25,7 @@ interface HydraContextData {
   hydraClass: IClass | null;
   setClass: (hydraClass: IClass | null) => void;
   endpoint: string;
-  setEndpoint: (iri: string) => Promise<void>;
+  setEndpoint: (iri: string, hypermedia?: IHypermediaContainer) => Promise<void>;
 }
 
 const defaultContextValue: HydraContextData = {
@@ -37,7 +37,7 @@ const defaultContextValue: HydraContextData = {
   setHypermedia: (_hypermedia) => {},
   hydraClass: null,
   setClass: (_hydraClass) => {},
-  endpoint: process.env.ENDPOINT || "http://localhost:8080/api",
+  endpoint: process.env.DEFAULT_END_POINT || "http://localhost:8080/api",
   setEndpoint: async (_iri) => {},
 };
 
@@ -56,7 +56,7 @@ export const HydraProvider: React.FC<Props> = ({ children }) => {
     const retrieveDefaultValue = async () => {
       try {
         const apiDoc = await getApiDoc(
-          process.env.ENDPOINT || "http://localhost:8080/api"
+          process.env.DEFAULT_END_POINT || "http://localhost:8080/api"
         );
         const entryPoint = await apiDoc.getEntryPoint();
         const hydraClass = apiDoc.supportedClasses
@@ -72,16 +72,15 @@ export const HydraProvider: React.FC<Props> = ({ children }) => {
             return { ...v, hydraClass: hydraClass };
           });
         };
-        const setEndpoint = async (iri: string) => {
-          console.log("setEndpoint called");
+        const setEndpoint = async (iri: string, hypermedia?: IHypermediaContainer) => {
           try {
-            const hypermedia = await hydraClient.getResource(iri);
-            const htype = hypermedia.type.first();
+            const _hypermedia = hypermedia || await hydraClient.getResource(iri);
+            const htype = _hypermedia.type.first();
             const hydraClass = apiDoc.supportedClasses.ofIri(htype).first();
             setValue((v) => {
               return {
                 ...v,
-                hypermedia: hypermedia,
+                hypermedia: _hypermedia,
                 hydraClass: hydraClass,
                 endpoint: iri,
               };
