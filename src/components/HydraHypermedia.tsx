@@ -22,6 +22,7 @@ interface State {
   graph: any;
   properties: JSX.Element[];
   members: JSX.Element[];
+  error: boolean;
 }
 
 const HydraHypermedia = ({ hypermedia }: Props) => {
@@ -34,14 +35,14 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
     const init = async () => {
       const res = await hypermedia.json();
       const graph = (await jsonld.expand(res))[0];
-      // console.log("res: ", res);
-      // console.log("graph: ", graph);
       const hclass = apiDoc.supportedClasses
         .ofIri(hypermedia.type.first())
         .first();
       const properties = new Array<JSX.Element>();
       const members = new Array<JSX.Element>();
-      if (graph) {
+      let error = true;
+      // console.log("graph: ", graph);
+      if (graph && graph["@id"]) {
         let i = 0;
         for (const prop of hclass.supportedProperties) {
           const value = graph[prop.property.iri];
@@ -112,12 +113,14 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
             );
           }
         }
+        error = false;
       }
 
       setState({
         graph: await jsonld.compact(res, res["@context"]),
         properties,
         members,
+        error,
       });
     };
     init();
@@ -140,6 +143,7 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
       {state && (
         <>
           <Box pad="small" background="light-3" round="small">
+            {state.error && <Heading level="6">Recurso no encontrado</Heading>}
             {state.properties.length > 0 && (
               <Heading level="5" margin="none">
                 Propiedades

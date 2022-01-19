@@ -9,6 +9,7 @@ import HydraClientFactory, {
 const hydraClient = HydraClientFactory.configure()
   .withDefaults()
   .withAllLinks()
+  .withJsonLd()
   .andCreate();
 
 const getApiDoc = async (endpoint: string) => {
@@ -25,7 +26,10 @@ interface HydraContextData {
   hydraClass: IClass | null;
   setClass: (hydraClass: IClass | null) => void;
   endpoint: string;
-  setEndpoint: (iri: string, hypermedia?: IHypermediaContainer) => Promise<void>;
+  setEndpoint: (
+    iri: string,
+    hypermedia?: IHypermediaContainer
+  ) => Promise<void>;
 }
 
 const defaultContextValue: HydraContextData = {
@@ -51,7 +55,6 @@ export const useHydra = () => {
 interface Props {}
 export const HydraProvider: React.FC<Props> = ({ children }) => {
   const [value, setValue] = useState<HydraContextData>(defaultContextValue);
-
   useEffect(() => {
     const retrieveDefaultValue = async () => {
       try {
@@ -72,13 +75,19 @@ export const HydraProvider: React.FC<Props> = ({ children }) => {
             return { ...v, hydraClass: hydraClass };
           });
         };
-        const setEndpoint = async (iri: string, hypermedia?: IHypermediaContainer) => {
+        const setEndpoint = async (
+          iri: string,
+          hypermedia?: IHypermediaContainer
+        ) => {
           try {
-            const _hypermedia = hypermedia || await hydraClient.getResource(iri);
+            const _hypermedia =
+              hypermedia || (await hydraClient.getResource(iri));
             const htype = _hypermedia.type.first();
-            console.log('htype: ', htype);
-            const hydraClass = htype ? apiDoc.supportedClasses.ofIri(htype).first() : null;
-            console.log('hydraClass: ', hydraClass);
+            console.log("htype: ", htype);
+            const hydraClass = htype
+              ? apiDoc.supportedClasses.ofIri(htype).first()
+              : null;
+            console.log("hydraClass: ", hydraClass);
             setValue((v) => {
               return {
                 ...v,

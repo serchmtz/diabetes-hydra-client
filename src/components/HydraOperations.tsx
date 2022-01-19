@@ -28,8 +28,9 @@ interface Target {
   resource: IHypermediaContainer;
 }
 const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
-  const [target, setTarget] = useState<Target>();
+  const [target, setTarget] = useState<Target | null | undefined>(undefined);
   const [operation, setOperation] = useState<IOperation>();
+  const loading = useRef(true);
   // const [body, setBody] = useState<object>();
   const body = useRef<object>();
   const { apiDoc, hydraClient, setEndpoint, entryPoint } = useHydra();
@@ -66,15 +67,20 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
     if (apiDoc) {
       const getHydraClass = async () => {
         const hresource = await hydraClient.getResource(iri);
-        const hclass = apiDoc.supportedClasses
-          .ofIri(hresource.type.first())
-          .first();
-        setTarget({ hydraClass: hclass, resource: hresource });
+        const htype = hresource.type.first();
+        loading.current = false;
+        if (htype) {
+          const hclass = apiDoc.supportedClasses.ofIri(htype).first();
+          setTarget({ hydraClass: hclass, resource: hresource });
+        } else {
+          setTarget(null);
+        }
       };
       getHydraClass();
     }
   }, [apiDoc, hydraClient, iri]);
-  return target ? (
+
+  return (
     <Card width="100%">
       <CardHeader background="light-1" pad="small">
         <Heading level="4" margin="none">
@@ -82,25 +88,33 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
         </Heading>
       </CardHeader>
       <CardBody pad="medium" gap="small" height="medium">
-        <Text size="12pt" weight="bold">
-          {`Objetivo: ${iri}`}
-        </Text>
-        <Text
-          size="10pt"
-          color="dark-3"
-        >{`@type: ${target.hydraClass.iri}`}</Text>
-        <HydraSupportedOperations
-          onOperationSelected={(operation) => setOperation(operation)}
-          supportedOperations={target.hydraClass.supportedOperations}
-        />
-        {operation && (
-          <HydraInputForm
-            expects={operation.expects.first()}
-            onBodyChange={(nextBody) => {
-              console.log("nextBody: ", nextBody);
-              body.current = nextBody;
-            }}
-          />
+        {!!target ? (
+          <>
+            <Text size="12pt" weight="bold">
+              {`Objetivo: ${iri}`}
+            </Text>
+            <Text
+              size="10pt"
+              color="dark-3"
+            >{`@type: ${target.hydraClass.iri}`}</Text>
+            <HydraSupportedOperations
+              onOperationSelected={(operation) => setOperation(operation)}
+              supportedOperations={target.hydraClass.supportedOperations}
+            />
+            {operation && (
+              <HydraInputForm
+                expects={operation.expects.first()}
+                onBodyChange={(nextBody) => {
+                  // console.log("nextBody: ", nextBody);
+                  body.current = nextBody;
+                }}
+              />
+            )}
+          </>
+        ) : (
+          <Text size="14pt">
+            {loading.current ? "Cargando..." : "No hay operaciones"}
+          </Text>
         )}
       </CardBody>
       <CardFooter justify="end" round="none" gap="small" pad="medium">
@@ -118,15 +132,13 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
           disabled={operation ? false : true}
           onClick={(e) => {
             e.preventDefault();
-            if (operation) {
+            if (!!operation && !!target) {
               handleInvoke(operation, target, body.current);
             }
           }}
         />
       </CardFooter>
     </Card>
-  ) : (
-    <></>
   );
 };
 
