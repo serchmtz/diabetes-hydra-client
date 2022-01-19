@@ -16,6 +16,9 @@ const EndPointInput: React.FC<Props> = () => {
     <Box direction="row" pad="medium">
       <TextInput
         value={endpointInput}
+        onKeyPress={({ key }) => {
+          if (key === "Enter") setEndpoint(endpointInput);
+        }}
         onChange={(next) => {
           setEndpointInput(next.target.value);
         }}

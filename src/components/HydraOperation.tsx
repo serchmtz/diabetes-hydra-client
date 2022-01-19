@@ -8,10 +8,10 @@ interface Props {
 const HydraOperation: React.FC<Props> = ({ operation, children }) => {
   return (
     <Box>
-      <Heading level="5" margin={{ bottom: "small" }}>
+      <Heading level="5" margin={{ bottom: "small" , top: "none"}}>
         {(operation as any).displayName}
       </Heading>
-      <Box margin={{ bottom: "medium" }}>
+      <Box>
         <NameValueList nameProps={{ width: "xsmall" }}>
           <NameValuePair
             name={

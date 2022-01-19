@@ -20,7 +20,12 @@ interface Props {
 const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
   if (!hydraClass) {
     return (
-      <Card background="light-4" pad="small" width="medium">
+      <Card
+        background="light-4"
+        pad="small"
+        width="large"
+        round={{ corner: "right", size: "small" }}
+      >
         <CardHeader pad="small" justify="center">
           <Heading level="5">ApiDocumentation</Heading>
         </CardHeader>
@@ -32,7 +37,7 @@ const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
       background="light-4"
       pad="small"
       width="large"
-      round={{ corner: "right" }}
+      round={{ corner: "right", size: "small" }}
     >
       <CardHeader pad="small" justify="center" direction="column">
         <Heading level="4">{hydraClass.displayName}</Heading>

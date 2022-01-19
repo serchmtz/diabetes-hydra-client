@@ -10,7 +10,7 @@ const HydraEntryPoint: React.FC<Props> = ({ children }) => {
   return (
     <Sidebar
       background="brand"
-      round={{ corner: "left" }}
+      round={{ corner: "left", size: "small" }}
       width="medium"
       pad="medium"
       height={{ min: "640px" }}
@@ -24,7 +24,9 @@ const HydraEntryPoint: React.FC<Props> = ({ children }) => {
             <Box pad={{ left: "3px" }}>
               {entryPoint.links.toArray().map((link, i) => (
                 <Box direction="row" key={i}>
-                  <Text color="light-1" weight="bold">↳</Text>
+                  <Text color="light-1" weight="bold">
+                    ↳
+                  </Text>
                   <HydraAnchor iri={link.target.iri} color="light-1">
                     {link.iri.replace(link.baseUrl + "/vocab#", "")}
                   </HydraAnchor>

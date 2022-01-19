@@ -1,6 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useHydra } from "../lib/HydraContext";
-import { IClass, IOperation, IResource } from "@hydra-cg/heracles.ts";
+import {
+  IClass,
+  IHypermediaContainer,
+  IOperation,
+} from "@hydra-cg/heracles.ts";
+
 import {
   Card,
   CardHeader,
@@ -11,28 +16,50 @@ import {
   Button,
 } from "grommet";
 import HydraSupportedOperations from "./HydraSupportedOperations";
+import HydraInputForm from "./HydraInputForm";
+import jsonld from "jsonld";
 
 interface Props {
   iri: string;
   onCancelClicked: () => void;
 }
-
+interface Target {
+  hydraClass: IClass;
+  resource: IHypermediaContainer;
+}
 const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
-  const [target, setTarget] =
-    useState<{ hydraClass: IClass; resource: IResource }>();
+  const [target, setTarget] = useState<Target>();
   const [operation, setOperation] = useState<IOperation>();
-  const { apiDoc, hydraClient, setEndpoint } = useHydra();
+  // const [body, setBody] = useState<object>();
+  const body = useRef<object>();
+  const { apiDoc, hydraClient, setEndpoint, entryPoint } = useHydra();
 
-  const handleInvoke = async (operation: IOperation, target: IResource) => {
-    const newOp = { ...operation, target: target };
+  const handleInvoke = async (
+    operation: IOperation,
+    target: Target,
+    body?: object
+  ) => {
+    const newOp = { ...operation, target: target.resource };
     const resp = await hydraClient.invoke(
       newOp,
-      newOp.method !== "GET" ? target : undefined
+      newOp.method !== "GET"
+        ? {
+            ...body,
+            iri: ":",
+            type: target.hydraClass.type,
+          }
+        : undefined
     );
     const hypermediaProcessor = hydraClient.getHypermediaProcessor(resp);
     const hyp = await hypermediaProcessor.process(resp, hydraClient);
+    const json = await jsonld.expand(await hyp.json());
+    console.log("hyp: ", hyp);
     onCancelClicked();
-    setEndpoint(hyp.iri, hyp);
+    if (json[0]) {
+      setEndpoint(json[0]["@id"] || resp.url);
+    } else if (entryPoint) {
+      setEndpoint(entryPoint.url);
+    }
   };
 
   useEffect(() => {
@@ -50,14 +77,11 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
   return target ? (
     <Card width="100%">
       <CardHeader background="light-1" pad="small">
-        <Heading
-          level="4"
-          margin={{ bottom: "small", left: "none", top: "none" }}
-        >
+        <Heading level="4" margin="none">
           Invocar una operación
         </Heading>
       </CardHeader>
-      <CardBody pad="small">
+      <CardBody pad="medium" gap="small" height="medium">
         <Text size="12pt" weight="bold">
           {`Objetivo: ${iri}`}
         </Text>
@@ -69,6 +93,15 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
           onOperationSelected={(operation) => setOperation(operation)}
           supportedOperations={target.hydraClass.supportedOperations}
         />
+        {operation && (
+          <HydraInputForm
+            expects={operation.expects.first()}
+            onBodyChange={(nextBody) => {
+              console.log("nextBody: ", nextBody);
+              body.current = nextBody;
+            }}
+          />
+        )}
       </CardBody>
       <CardFooter justify="end" round="none" gap="small" pad="medium">
         <Button
@@ -86,7 +119,7 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
           onClick={(e) => {
             e.preventDefault();
             if (operation) {
-              handleInvoke(operation, target.resource);
+              handleInvoke(operation, target, body.current);
             }
           }}
         />

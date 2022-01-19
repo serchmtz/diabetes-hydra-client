@@ -23,6 +23,7 @@ interface State {
   properties: JSX.Element[];
   members: JSX.Element[];
 }
+
 const HydraHypermedia = ({ hypermedia }: Props) => {
   const { apiDoc } = useHydra();
   const [state, setState] = useState<State>();
@@ -38,74 +39,81 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
       const hclass = apiDoc.supportedClasses
         .ofIri(hypermedia.type.first())
         .first();
-
       const properties = new Array<JSX.Element>();
       const members = new Array<JSX.Element>();
-      let i = 0;
-      for (const prop of hclass.supportedProperties) {
-        const value = graph[prop.property.iri];
-        if (value && value instanceof Array && value.length > 0) {
-          const val = (value.at(0) || {}) as {
-            "@id"?: string;
-            "@value"?: string;
-          };
-          properties.push(
-            <NameValuePair
-              key={i++}
-              name={
-                <Tip
-                  content={
-                    <Box>
-                      <Text size="10pt" color="status-critical">
-                        {prop.property.iri}
-                      </Text>
-                    </Box>
-                  }
-                >
-                  <Text size="12pt" style={{ cursor: "help" }} weight="bold">
-                    {prop.property.displayName}
-                  </Text>
-                </Tip>
-              }
-            >
-              {val["@id"] ? (
-                <HydraAnchor iri={val["@id"]} size="12pt" withOperations>
-                  {val["@id"]}
-                </HydraAnchor>
-              ) : (
-                <Tip
-                  content={
-                    <Box overflow="auto">
-                      <Text
-                        size="10pt"
-                        color="status-critical"
-                        wordBreak="break-word"
-                      >
-                        {prop.property.valuesOfType.first().iri}
-                      </Text>
-                    </Box>
-                  }
-                >
-                  <Text size="12pt" style={{ cursor: "help" }}>
-                    {val["@value"]}
-                  </Text>
-                </Tip>
-              )}
-            </NameValuePair>
-          );
+      if (graph) {
+        let i = 0;
+        for (const prop of hclass.supportedProperties) {
+          const value = graph[prop.property.iri];
+          if (value && value instanceof Array && value.length > 0) {
+            const val = (value.at(0) || {}) as {
+              "@id"?: string;
+              "@value"?: string;
+            };
+            properties.push(
+              <NameValuePair
+                key={i++}
+                name={
+                  <Tip
+                    content={
+                      <Box>
+                        <Text size="10pt" color="status-critical">
+                          {prop.property.iri}
+                        </Text>
+                      </Box>
+                    }
+                  >
+                    <Text size="12pt" style={{ cursor: "help" }} weight="bold">
+                      {prop.property.displayName}
+                    </Text>
+                  </Tip>
+                }
+              >
+                {val["@id"] ? (
+                  <HydraAnchor iri={val["@id"]} size="12pt" withOperations>
+                    {val["@id"]}
+                  </HydraAnchor>
+                ) : (
+                  <Tip
+                    content={
+                      <Box overflow="auto">
+                        <Text
+                          size="10pt"
+                          color="status-critical"
+                          wordBreak="break-word"
+                        >
+                          {prop.property.valuesOfType.first().iri}
+                        </Text>
+                      </Box>
+                    }
+                  >
+                    <Text size="12pt" style={{ cursor: "help" }}>
+                      {val["@value"]}
+                    </Text>
+                  </Tip>
+                )}
+              </NameValuePair>
+            );
+          }
+        }
+
+        if (hypermedia.members) {
+          i = 0;
+          for (const member of hypermedia.members) {
+            members.push(
+              <HydraAnchor
+                iri={member.iri}
+                key={i++}
+                size="12pt"
+                withOperations
+              >
+                {member.iri}
+              </HydraAnchor>
+            );
+          }
         }
       }
 
-      if (hypermedia.members) {
-        i = 0;
-        for (const member of hypermedia.members) {
-          members.push(
-            <HydraAnchor iri={member.iri} key={i++} size="12pt" withOperations>
-              {member.iri}
-            </HydraAnchor>
-          );
-        }
-      }
       setState({
         graph: await jsonld.compact(res, res["@context"]),
         properties,
@@ -168,7 +176,7 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
 \`\`\`json
 ${JSON.stringify(state.graph, null, 2)}
 \`\`\`
-      `}
+`}
                 </Markdown>
               </Box>
             </AccordionPanel>

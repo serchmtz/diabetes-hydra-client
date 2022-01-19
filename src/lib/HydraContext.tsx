@@ -76,7 +76,9 @@ export const HydraProvider: React.FC<Props> = ({ children }) => {
           try {
             const _hypermedia = hypermedia || await hydraClient.getResource(iri);
             const htype = _hypermedia.type.first();
-            const hydraClass = apiDoc.supportedClasses.ofIri(htype).first();
+            console.log('htype: ', htype);
+            const hydraClass = htype ? apiDoc.supportedClasses.ofIri(htype).first() : null;
+            console.log('hydraClass: ', hydraClass);
             setValue((v) => {
               return {
                 ...v,

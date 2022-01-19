@@ -1,7 +1,4 @@
-import {
-  IOperation,
-  OperationsCollection,
-} from "@hydra-cg/heracles.ts";
+import { IOperation, OperationsCollection } from "@hydra-cg/heracles.ts";
 import { Box, Heading, Menu, Text } from "grommet";
 import { useState } from "react";
 import HydraOperation from "./HydraOperation";
@@ -44,9 +41,9 @@ const HydraSupportedOperations: React.FC<Props> = ({
 
   return (
     <Box
-      pad="medium"
-      width={{ min: "large" }}
-      height={{ min: "small", max: "large" }}
+    pad="small"
+    width={{ min: "large" }}
+      // height={{ min: "small", max: "large" }}
     >
       <Heading margin={{ bottom: "small", top: "none" }} level="4">
         Operaciones soportadas
