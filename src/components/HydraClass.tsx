@@ -11,20 +11,23 @@ import {
   Box,
   NameValueList,
   NameValuePair,
+  ResponsiveContext,
 } from "grommet";
+import { useContext } from "react";
 
 interface Props {
   hydraClass: IClass | null;
 }
 
 const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
+  const size = useContext(ResponsiveContext);
   if (!hydraClass) {
     return (
       <Card
         background="light-4"
         pad="small"
         width="large"
-        round={{ corner: "right", size: "small" }}
+        round={size === "small" ? "small" : { corner: "right", size: "small" }}
       >
         <CardHeader pad="small" justify="center">
           <Heading level="5">ApiDocumentation</Heading>
@@ -34,10 +37,11 @@ const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
   }
   return (
     <Card
+      style={{ boxShadow: "none" }}
       background="light-4"
       pad="small"
       width="large"
-      round={{ corner: "right", size: "small" }}
+      round={size === "small" ? "small" : { corner: "right", size: "small" }}
     >
       <CardHeader pad="small" justify="center" direction="column">
         <Heading level="4">{hydraClass.displayName}</Heading>

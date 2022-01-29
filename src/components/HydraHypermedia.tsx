@@ -24,7 +24,10 @@ interface State {
   members: JSX.Element[];
   error: boolean;
 }
-
+interface GraphValue {
+  "@id"?: string;
+  "@value"?: string;
+}
 const HydraHypermedia = ({ hypermedia }: Props) => {
   const { apiDoc } = useHydra();
   const [state, setState] = useState<State>();
@@ -47,10 +50,7 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
         for (const prop of hclass.supportedProperties) {
           const value = graph[prop.property.iri];
           if (value && value instanceof Array && value.length > 0) {
-            const val = (value.at(0) || {}) as {
-              "@id"?: string;
-              "@value"?: string;
-            };
+            const val = (value[0] || {}) as GraphValue;
             properties.push(
               <NameValuePair
                 key={i++}
@@ -173,7 +173,8 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
                 background="light-3"
                 round="small"
                 pad="small"
-                margin={{ top: "small", bottom: "small" }}
+        margin={{ top: "small", bottom: "small" }}
+        overflow="auto"
               >
                 <Markdown style={{ fontSize: "10pt" }}>
                   {`

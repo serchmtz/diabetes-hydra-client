@@ -40,20 +40,15 @@ const HydraSupportedOperations: React.FC<Props> = ({
   });
 
   return (
-    <Box
-      pad="small"
-      width={{ min: "large" }}
-      // height={{ min: "small", max: "large" }}
-    >
+    <Box pad="small" width={{ min: "large" }}>
       <Heading margin={{ bottom: "small", top: "none" }} level="4">
         Operaciones soportadas
       </Heading>
       <Menu
         label={operation ? `Método ${operation.method}` : "Método HTTP"}
-    items={menuItems}
-    
+        items={menuItems}
       />
-      {operation && <HydraOperation operation={operation} />}
+      <HydraOperation operation={operation} />
       {children}
     </Box>
   );

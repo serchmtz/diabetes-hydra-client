@@ -2,10 +2,11 @@ import { IOperation } from "@hydra-cg/heracles.ts";
 import { Box, Heading, NameValueList, NameValuePair, Text } from "grommet";
 
 interface Props {
-  operation: IOperation;
+  operation?: IOperation;
 }
 
 const HydraOperation: React.FC<Props> = ({ operation, children }) => {
+  if(!!!operation) return null;
   return (
     <Box>
       <Heading level="5" margin={{ bottom: "small" , top: "none"}}>

@@ -17,6 +17,7 @@ const getApiDoc = async (endpoint: string) => {
 };
 
 interface HydraContextData {
+  error: Error | null;
   loading: boolean;
   hydraClient: IHydraClient;
   apiDoc: IApiDocumentation | null;
@@ -33,6 +34,7 @@ interface HydraContextData {
 }
 
 const defaultContextValue: HydraContextData = {
+  error: null,
   loading: true,
   hydraClient: hydraClient,
   apiDoc: null,
@@ -41,7 +43,7 @@ const defaultContextValue: HydraContextData = {
   setHypermedia: (_hypermedia) => {},
   hydraClass: null,
   setClass: (_hydraClass) => {},
-  endpoint: process.env.DEFAULT_END_POINT || "http://localhost:8080/api",
+  endpoint: process.env.REACT_APP_DEFAULT_END_POINT || "http://localhost:8080/api",
   setEndpoint: async (_iri) => {},
 };
 
@@ -59,7 +61,7 @@ export const HydraProvider: React.FC<Props> = ({ children }) => {
     const retrieveDefaultValue = async () => {
       try {
         const apiDoc = await getApiDoc(
-          process.env.DEFAULT_END_POINT || "http://localhost:8080/api"
+          process.env.REACT_APP_DEFAULT_END_POINT || "http://localhost:8080/api"
         );
         const entryPoint = await apiDoc.getEntryPoint();
         const hydraClass = apiDoc.supportedClasses
@@ -80,25 +82,47 @@ export const HydraProvider: React.FC<Props> = ({ children }) => {
           hypermedia?: IHypermediaContainer
         ) => {
           try {
+            let _apiDoc = apiDoc;
+            let _entryPoint = entryPoint;
+
+            setValue((v) => {
+              _apiDoc = v.apiDoc || apiDoc;
+              _entryPoint = v.entryPoint || entryPoint;
+              return {
+                ...v,
+                loading: true,
+              };
+            });
+
             const _hypermedia =
               hypermedia || (await hydraClient.getResource(iri));
             const htype = _hypermedia.type.first();
-            console.log("htype: ", htype);
+            const link1 = _hypermedia.headers.get("Link");
+            const link2 = _entryPoint.headers.get("Link");
+
+            if (link1 !== link2) {
+              _apiDoc = await getApiDoc(iri);
+              _entryPoint = await _apiDoc.getEntryPoint();
+            }
+
             const hydraClass = htype
-              ? apiDoc.supportedClasses.ofIri(htype).first()
+              ? _apiDoc.supportedClasses.ofIri(htype).first()
               : null;
-            console.log("hydraClass: ", hydraClass);
+
             setValue((v) => {
               return {
                 ...v,
                 hypermedia: _hypermedia,
                 hydraClass: hydraClass,
+                entryPoint: _entryPoint,
+                apiDoc: _apiDoc,
                 endpoint: iri,
+                loading: false,
               };
             });
           } catch (err) {
             console.error(err);
-            setValue(defaultContextValue);
+            setValue({ ...defaultContextValue, error: err as Error });
           }
         };
         setValue((v) => {
@@ -112,11 +136,12 @@ export const HydraProvider: React.FC<Props> = ({ children }) => {
             setClass: setClass,
             loading: false,
             setEndpoint: setEndpoint,
+            error: null,
           };
         });
       } catch (err) {
         console.log(err);
-        setValue(defaultContextValue);
+        setValue({ ...defaultContextValue, error: err as Error });
       }
     };
     retrieveDefaultValue();

@@ -16,7 +16,7 @@ import {
   Button,
 } from "grommet";
 import HydraSupportedOperations from "./HydraSupportedOperations";
-import HydraInputForm from "./HydraInputForm";
+import HydraInputForm, { BodyType } from "./HydraInputForm";
 import jsonld from "jsonld";
 
 interface Props {
@@ -27,12 +27,14 @@ interface Target {
   hydraClass: IClass;
   resource: IHypermediaContainer;
 }
+
 const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
+  const [operation, setOperation] = useState<IOperation | null>(null);
   const [target, setTarget] = useState<Target | null | undefined>(undefined);
-  const [operation, setOperation] = useState<IOperation>();
+  const [isValid, setIsValid] = useState(true);
   const loading = useRef(true);
-  // const [body, setBody] = useState<object>();
-  const body = useRef<object>();
+  const body = useRef<BodyType>();
+
   const { apiDoc, hydraClient, setEndpoint, entryPoint } = useHydra();
 
   const handleInvoke = async (
@@ -98,13 +100,19 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
               color="dark-3"
             >{`@type: ${target.hydraClass.iri}`}</Text>
             <HydraSupportedOperations
-              onOperationSelected={(operation) => setOperation(operation)}
+              onOperationSelected={(operation) => {
+                setOperation(operation);
+              }}
               supportedOperations={target.hydraClass.supportedOperations}
             />
-            {operation && (
+            {!!operation && (
               <HydraInputForm
                 expects={operation.expects.first()}
-                onBodyChange={(nextBody) => {
+                onValidate={({ valid }) => {
+                  console.log("valid: ", valid);
+                  setTimeout(() => setIsValid(valid));
+                }}
+                onChange={(nextBody) => {
                   // console.log("nextBody: ", nextBody);
                   body.current = nextBody;
                 }}
@@ -118,18 +126,11 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
         )}
       </CardBody>
       <CardFooter justify="end" round="none" gap="small" pad="medium">
-        <Button
-          label="Cancelar"
-          secondary
-          onClick={(e) => {
-            e.preventDefault();
-            onCancelClicked();
-          }}
-        />
+        <Button label="Cancelar" secondary onClick={onCancelClicked} />
         <Button
           label="Invocar"
+          disabled={operation?.method === "GET" ? false : !isValid}
           primary
-          disabled={operation ? false : true}
           onClick={(e) => {
             e.preventDefault();
             if (!!operation && !!target) {
