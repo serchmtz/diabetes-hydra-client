@@ -2,6 +2,7 @@ import { IHypermediaContainer } from "@hydra-cg/heracles.ts";
 import {
   Box,
   Text,
+  Paragraph,
   Markdown,
   Accordion,
   AccordionPanel,
@@ -64,14 +65,20 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
                       </Box>
                     }
                   >
-                    <Text size="12pt" style={{ cursor: "help" }} weight="bold">
-                      {prop.property.displayName}
-                    </Text>
+                    <Box overflow="auto">
+                      <Text
+                        size="11pt"
+                        style={{ cursor: "help" }}
+                        weight="bold"
+                      >
+                        {prop.property.displayName}
+                      </Text>
+                    </Box>
                   </Tip>
                 }
               >
                 {val["@id"] ? (
-                  <HydraAnchor iri={val["@id"]} size="12pt" withOperations>
+                  <HydraAnchor iri={val["@id"]} size="11pt" withOperations>
                     {val["@id"]}
                   </HydraAnchor>
                 ) : (
@@ -88,9 +95,9 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
                       </Box>
                     }
                   >
-                    <Text size="12pt" style={{ cursor: "help" }}>
+                    <Paragraph size="11pt" style={{ cursor: "help" }} margin="none">
                       {val["@value"]}
-                    </Text>
+                    </Paragraph>
                   </Tip>
                 )}
               </NameValuePair>
@@ -125,7 +132,7 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
     };
     init();
   }, [hypermedia, apiDoc]);
-  if (!hypermedia) {
+  if (!!!hypermedia) {
     return <Box background="light-1" pad="medium" width="large"></Box>;
   }
   // console.log('response: ', response);
@@ -143,21 +150,25 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
       {state && (
         <>
           <Box pad="small" background="light-3" round="small">
-            {state.error && <Heading level="6">Recurso no encontrado</Heading>}
-            {state.properties.length > 0 && (
-              <Heading level="5" margin="none">
-                Propiedades
-              </Heading>
-            )}
+            <Heading level="6" hidden={!state.error}>
+              Recurso no encontrado
+            </Heading>
+
+            <Heading
+              level="5"
+              margin="none"
+              hidden={state.properties.length <= 0}
+            >
+              Propiedades
+            </Heading>
+
             <Box margin={{ top: "small" }}>
               <NameValueList>{state.properties}</NameValueList>
             </Box>
 
-            {state.members.length > 0 && (
-              <Heading level="5" margin="none">
-                Miembros de la colección
-              </Heading>
-            )}
+            <Heading level="5" margin="none" hidden={state.members.length <= 0}>
+              Miembros de la colección
+            </Heading>
             <Box margin={{ top: "small" }}>{state.members}</Box>
           </Box>
 
@@ -173,8 +184,8 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
                 background="light-3"
                 round="small"
                 pad="small"
-        margin={{ top: "small", bottom: "small" }}
-        overflow="auto"
+                margin={{ top: "small", bottom: "small" }}
+                overflow="auto"
               >
                 <Markdown style={{ fontSize: "10pt" }}>
                   {`

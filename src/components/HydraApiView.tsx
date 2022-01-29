@@ -36,16 +36,17 @@ const HydraApiView: React.FC<Props> = ({ children }) => {
   }
   return (
     <Box justify="center" align="center">
-      {loading ? (
+      <div hidden={!loading}>
         <Spinner size="large" margin="30vh" />
-      ) : (
-        <Box direction={size === "small" ? "column" : "row"} width="100%">
+      </div>
+      <div hidden={loading} style={{ width: "100%" }}>
+        <Box direction={size === "small" ? "column" : "row"}>
           <HydraEntryPoint />
           <HydraHypermedia hypermedia={hypermedia} />
           <HydraClass hydraClass={hydraClass} />
           {children}
         </Box>
-      )}
+      </div>
     </Box>
   );
 };

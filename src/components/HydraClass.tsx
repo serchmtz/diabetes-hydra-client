@@ -30,7 +30,7 @@ const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
         round={size === "small" ? "small" : { corner: "right", size: "small" }}
       >
         <CardHeader pad="small" justify="center">
-          <Heading level="5">ApiDocumentation</Heading>
+          <Heading level="5">Documentación de la API</Heading>
         </CardHeader>
       </Card>
     );
@@ -44,7 +44,8 @@ const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
       round={size === "small" ? "small" : { corner: "right", size: "small" }}
     >
       <CardHeader pad="small" justify="center" direction="column">
-        <Heading level="4">{hydraClass.displayName}</Heading>
+        <Heading level="4">Documentación de la API</Heading>
+        <Text weight="bold" >{hydraClass.displayName}</Text>
         <Text textAlign="center">{hydraClass.description}</Text>
       </CardHeader>
       <CardBody overflow="auto" pad="small">

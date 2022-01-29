@@ -43,7 +43,8 @@ const defaultContextValue: HydraContextData = {
   setHypermedia: (_hypermedia) => {},
   hydraClass: null,
   setClass: (_hydraClass) => {},
-  endpoint: process.env.REACT_APP_DEFAULT_END_POINT || "http://localhost:8080/api",
+  endpoint:
+    process.env.REACT_APP_DEFAULT_END_POINT || "http://localhost:8080/api",
   setEndpoint: async (_iri) => {},
 };
 
