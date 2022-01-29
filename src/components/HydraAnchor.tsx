@@ -1,8 +1,4 @@
-import {
-  Anchor,
-  Layer,
-  Box,
-} from "grommet";
+import { Anchor, Layer, Box } from "grommet";
 import { ColorType } from "grommet/utils";
 import { useState } from "react";
 import { useHydra } from "../lib/HydraContext";
@@ -33,9 +29,13 @@ const HydraAnchor: React.FC<Props> = ({
   };
   return (
     <Box>
-      <Anchor onClick={handleOnClick} size={size} color={color}>
-        {children}
-      </Anchor>
+      <Anchor
+        onClick={handleOnClick}
+        size={size}
+        color={color}
+        label={children}
+      />
+
       {show && (
         <Layer
           onEsc={() => setShow(false)}
