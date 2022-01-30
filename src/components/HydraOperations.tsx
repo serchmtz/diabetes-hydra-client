@@ -16,7 +16,7 @@ import {
   Button,
 } from "grommet";
 import HydraSupportedOperations from "./HydraSupportedOperations";
-import HydraInputForm, { BodyType } from "./HydraInputForm";
+import HydraInputForm from "./HydraInputForm";
 import jsonld from "jsonld";
 
 interface Props {
@@ -27,13 +27,61 @@ interface Target {
   hydraClass: IClass;
   resource: IHypermediaContainer;
 }
+export type BodyType = Object & { [k in string]: any };
+
+function objectToHydraPayload(body: BodyType, hydraClass: IClass) {
+  let newBody = { ...body };
+  const supprops = hydraClass.supportedProperties;
+  for (const prop of supprops) {
+    const valueTypes = prop.property.valuesOfType;
+    // console.log("valueTypes: ", valueTypes);
+    if (newBody.hasOwnProperty(prop.property.iri)) {
+      if (newBody[prop.property.iri] === "") {
+        delete newBody[prop.property.iri];
+        continue;
+      }
+
+      if (valueTypes.ofType("http://www.w3.org/ns/hydra/core#Class").any()) {
+        newBody[prop.property.iri] = {
+          "@id": newBody[prop.property.iri],
+          "@type": prop.property.valuesOfType.first().iri,
+        };
+        continue;
+      }
+
+      if (
+        valueTypes.ofIri("http://www.w3.org/2001/XMLSchema#float").any() ||
+        valueTypes.ofIri("http://www.w3.org/2001/XMLSchema#double").any() ||
+        valueTypes.ofIri("http://www.w3.org/2001/XMLSchema#decimal").any()
+      ) {
+        // Ensure number is decimal
+        const parsedFloat = parseFloat(newBody[prop.property.iri]);
+        newBody[prop.property.iri] =
+          parsedFloat % 1 === 0 ? parsedFloat + 1e-15 : parsedFloat;
+
+        continue;
+      }
+
+      if (
+        valueTypes.ofIri("http://www.w3.org/2001/XMLSchema#integer").any() ||
+        valueTypes.ofIri("http://www.w3.org/2001/XMLSchema#int").any() ||
+        valueTypes.ofIri("http://www.w3.org/2001/XMLSchema#long").any() ||
+        valueTypes.ofIri("http://www.w3.org/2001/XMLSchema#short").any() ||
+        valueTypes.ofIri("http://www.w3.org/2001/XMLSchema#byte").any()
+      ) {
+        newBody[prop.property.iri] = parseInt(newBody[prop.property.iri]);
+        continue;
+      }
+    }
+  }
+  return newBody;
+}
 
 const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
   const [operation, setOperation] = useState<IOperation | null>(null);
   const [target, setTarget] = useState<Target | null | undefined>(undefined);
-  const [isValid, setIsValid] = useState(true);
+  // const [isValid, setIsValid] = useState(true);
   const loading = useRef(true);
-  const body = useRef<BodyType>();
 
   const { apiDoc, hydraClient, setEndpoint, entryPoint } = useHydra();
 
@@ -42,12 +90,17 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
     target: Target,
     body?: object
   ) => {
+    let newBody = body;
+    if (body !== undefined) {
+      newBody = objectToHydraPayload(body, operation.expects.first());
+    }
+
     const newOp = { ...operation, target: target.resource };
     const resp = await hydraClient.invoke(
       newOp,
       newOp.method !== "GET"
         ? {
-            ...body,
+            ...newBody,
             iri: ":",
             type: target.hydraClass.type,
           }
@@ -56,7 +109,7 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
     const hypermediaProcessor = hydraClient.getHypermediaProcessor(resp);
     const hyp = await hypermediaProcessor.process(resp, hydraClient);
     const json = await jsonld.expand(await hyp.json());
-    console.log("hyp: ", hyp);
+    // console.log("hyp: ", hyp);
     onCancelClicked();
     if (json[0]) {
       setEndpoint(json[0]["@id"] || resp.url);
@@ -107,14 +160,18 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
             />
             {!!operation && (
               <HydraInputForm
+                id="hydra-form"
                 expects={operation.expects.first()}
-                onValidate={({ valid }) => {
-                  console.log("valid: ", valid);
-                  setTimeout(() => setIsValid(valid));
-                }}
-                onChange={(nextBody) => {
-                  // console.log("nextBody: ", nextBody);
-                  body.current = nextBody;
+                // onValidate={({ valid }) => {
+                //   console.log("valid: ", valid);
+                //   setIsValid(valid);
+                // }}
+                onSubmit={(e) => {
+                  // console.log("e: ", e);
+                  // console.log("e.value: ", e.value);
+                  if (!!operation && !!target) {
+                    handleInvoke(operation, target, e.value);
+                  }
                 }}
               />
             )}
@@ -129,14 +186,10 @@ const HydraOperations: React.FC<Props> = ({ iri, onCancelClicked }) => {
         <Button label="Cancelar" secondary onClick={onCancelClicked} />
         <Button
           label="Invocar"
-          disabled={operation?.method === "GET" ? false : !isValid}
+          // disabled={operation?.method === "GET" ? false : !isValid}
           primary
-          onClick={(e) => {
-            e.preventDefault();
-            if (!!operation && !!target) {
-              handleInvoke(operation, target, body.current);
-            }
-          }}
+          type="submit"
+          form="hydra-form"
         />
       </CardFooter>
     </Card>
