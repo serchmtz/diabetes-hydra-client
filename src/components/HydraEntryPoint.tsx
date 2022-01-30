@@ -49,7 +49,7 @@ const HydraEntryPoint: React.FC<Props> = ({ children }) => {
                       ⮡
                     </Text>
                     <HydraAnchor iri={link.target.iri} color="light-1">
-                      {link.iri.replace(link.baseUrl + "/vocab#", "")}
+                    {link.iri.replace(/^.+[#/]+/, "")}
                     </HydraAnchor>
                   </Box>
                 ))}
