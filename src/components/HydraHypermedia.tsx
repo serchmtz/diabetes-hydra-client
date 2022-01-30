@@ -71,7 +71,9 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
                         style={{ cursor: "help" }}
                         weight="bold"
                       >
-                        {prop.property.displayName}
+                        {prop.property.displayName === ""
+                          ? (prop as any).displayName
+                          : prop.property.displayName}
                       </Text>
                     </Box>
                   </Tip>
@@ -95,7 +97,11 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
                       </Box>
                     }
                   >
-                    <Paragraph size="11pt" style={{ cursor: "help" }} margin="none">
+                    <Paragraph
+                      size="11pt"
+                      style={{ cursor: "help" }}
+                      margin="none"
+                    >
                       {val["@value"]}
                     </Paragraph>
                   </Tip>

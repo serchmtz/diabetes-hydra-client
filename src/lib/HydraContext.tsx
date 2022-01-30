@@ -6,11 +6,14 @@ import HydraClientFactory, {
   IClass,
 } from "@hydra-cg/heracles.ts";
 
+
+
 const hydraClient = HydraClientFactory.configure()
   .withDefaults()
   .withAllLinks()
   .withJsonLd()
   .andCreate();
+
 
 const getApiDoc = async (endpoint: string) => {
   return await hydraClient.getApiDocumentation(endpoint);

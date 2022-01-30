@@ -1,6 +1,6 @@
 import { Anchor, Layer, Box } from "grommet";
 import { ColorType } from "grommet/utils";
-import { useState } from "react";
+import { MouseEventHandler, useState } from "react";
 import { useHydra } from "../lib/HydraContext";
 import HydraOperations from "./HydraOperations";
 
@@ -20,8 +20,8 @@ const HydraAnchor: React.FC<Props> = ({
   const [show, setShow] = useState(false);
   const { setEndpoint } = useHydra();
 
-  const handleOnClick = () => {
-    if (!withOperations) {
+  const handleOnClick: MouseEventHandler<HTMLAnchorElement> = ({ ctrlKey }) => {
+    if (!withOperations || ctrlKey) {
       setEndpoint(iri);
     } else {
       setShow(true);

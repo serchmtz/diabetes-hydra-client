@@ -45,7 +45,7 @@ const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
     >
       <CardHeader pad="small" justify="center" direction="column">
         <Heading level="4">Documentación de la API</Heading>
-        <Text weight="bold" >{hydraClass.displayName}</Text>
+        <Text weight="bold">{hydraClass.displayName}</Text>
         <Text textAlign="center">{hydraClass.description}</Text>
       </CardHeader>
       <CardBody overflow="auto" pad="small">
@@ -57,7 +57,9 @@ const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
             <AccordionPanel
               label={
                 <Heading level="6" margin="none">
-                  {prop.property.displayName}
+                  {prop.property.displayName === ""
+                    ? (prop as any).displayName
+                    : prop.property.displayName}
                 </Heading>
               }
               key={i}
