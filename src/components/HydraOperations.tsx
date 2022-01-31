@@ -30,6 +30,7 @@ interface Target {
 export type BodyType = Object & { [k in string]: any };
 
 function objectToHydraPayload(body: BodyType, hydraClass: IClass) {
+  if(hydraClass === null ) return undefined;
   let newBody = { ...body };
   const supprops = hydraClass.supportedProperties;
   for (const prop of supprops) {

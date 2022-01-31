@@ -102,7 +102,18 @@ const HydraInputForm: React.FC<Props> = ({
   id,
 }) => {
   const valueRef = useRef({ "@type": expects?.iri });
-  if (!expects) return null;
+  if (!expects) {
+    return (
+      <Form
+        id={id}
+        ref={ref}
+        onValidate={onValidate}
+        validate="submit"
+        onSubmit={onSubmit}
+        onChange={onChange}
+      />
+    );
+  }
   const inputFields = expects.supportedProperties
     .toArray()
     .map((prop, i) => generateInputField(prop, i));
