@@ -12,6 +12,8 @@ import {
   TextInput,
   Text,
   FormExtendedEvent,
+  FormFieldProps,
+  TextInputProps,
 } from "grommet";
 
 interface Props {
@@ -27,14 +29,23 @@ interface Props {
   }) => void;
 }
 interface InputTypeReturn {
-  inputType: "url" | "date" | "number" | "text";
+  inputType: TextInputProps["type"];
   step?: string;
+  validate?: FormFieldProps["validate"];
+  pattern?: string;
+  title?: string;
 }
 function valueTypestoInputType(
   valueTypes: ResourceFilterableCollection<IResource>
 ): InputTypeReturn {
   if (valueTypes.ofType("http://www.w3.org/ns/hydra/core#Class").any()) {
-    return { inputType: "url" };
+    return {
+      inputType: "text",
+      pattern: "^.*[:/].*",
+      title:
+      "Un IRI válido (ej. http://x.org/foo/bar, /a/b/2, ./a/b/1)",
+      validate: [{ message: "Formato incorrecto", status: "error" }],
+    };
   }
   if (
     valueTypes.ofIri("http://www.w3.org/2001/XMLSchema#dateTime").any() ||
@@ -72,7 +83,8 @@ function generateInputField(
   const id = supportedProperty.property.iri;
   const required = supportedProperty.required;
   const placeholder = valueTypes.nonBlank().first().iri;
-  const { inputType, step } = valueTypestoInputType(valueTypes);
+  const { inputType, step, validate, pattern, title } =
+    valueTypestoInputType(valueTypes);
 
   return (
     <FormField
@@ -80,8 +92,11 @@ function generateInputField(
       label={<Text size="xsmall">{baseName}</Text>}
       htmlFor={id}
       required={required}
+      validate={validate}
     >
       <TextInput
+        title={title}
+        pattern={pattern}
         id={id}
         name={id}
         placeholder={placeholder}
