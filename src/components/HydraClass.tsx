@@ -12,8 +12,12 @@ import {
   NameValueList,
   NameValuePair,
   ResponsiveContext,
+  Layer,
+  Button,
 } from "grommet";
-import { useContext } from "react";
+import { Close, ShareOption } from "grommet-icons";
+import { useContext, useState } from "react";
+import HydraGraphView from "./HydraGraphView";
 
 interface Props {
   hydraClass: IClass | null;
@@ -21,6 +25,7 @@ interface Props {
 
 const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
   const size = useContext(ResponsiveContext);
+  const [show, setShow] = useState(false);
   if (!hydraClass) {
     return (
       <Card
@@ -47,6 +52,13 @@ const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
         <Heading level="4">Documentación de la API</Heading>
         <Text weight="bold">{hydraClass.displayName}</Text>
         <Text textAlign="center">{hydraClass.description}</Text>
+        <Button
+          icon={<ShareOption />}
+          onClick={() => setShow(true)}
+          label="Grafo"
+          plain
+          hoverIndicator
+        />
       </CardHeader>
       <CardBody overflow="auto" pad="small">
         {hydraClass.supportedProperties.length > 0 && (
@@ -115,6 +127,28 @@ const HydraClass: React.FC<Props> = ({ hydraClass, children }) => {
         {children}
       </CardBody>
       <CardFooter></CardFooter>
+      {show && (
+        <Layer
+          onEsc={() => setShow(false)}
+          onClickOutside={() => setShow(false)}
+        >
+          <Button
+            icon={<Close />}
+            onClick={() => setShow(false)}
+            alignSelf="end"
+          />
+          <Box pad="small">
+            <Text size="xsmall" style={{ fontFamily: "monospace" }}>
+              {"Zoom +/-: Scroll arriba/abajo"}
+            </Text>
+            <Text size="xsmall" style={{ fontFamily: "monospace" }}>
+              {"Paneo: Clic izquierdo y arrastrar"}
+            </Text>
+          </Box>
+
+          <HydraGraphView hydraClass={hydraClass} />
+        </Layer>
+      )}
     </Card>
   );
 };

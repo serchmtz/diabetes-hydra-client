@@ -1,20 +1,14 @@
 import { IHypermediaContainer } from "@hydra-cg/heracles.ts";
 import {
-  Box,
-  Text,
-  Paragraph,
-  Markdown,
-  Accordion,
-  AccordionPanel,
-  Heading,
-  NameValueList,
-  NameValuePair,
-  Tip,
+    Accordion,
+    AccordionPanel, Box, Heading, Markdown, NameValueList,
+    NameValuePair, Paragraph, Text, Tip
 } from "grommet";
-import { useEffect, useState } from "react";
 import jsonld from "jsonld";
+import { useEffect, useState } from "react";
 import { useHydra } from "../lib/HydraContext";
 import HydraAnchor from "./HydraAnchor";
+// import ReactFlow, { Elements, Position } from "react-flow-renderer";
 
 interface Props {
   hypermedia: IHypermediaContainer | null;
@@ -24,11 +18,13 @@ interface State {
   properties: JSX.Element[];
   members: JSX.Element[];
   error: boolean;
+  // elements: Elements;
 }
 interface GraphValue {
   "@id"?: string;
   "@value"?: string;
 }
+
 const HydraHypermedia = ({ hypermedia }: Props) => {
   const { apiDoc } = useHydra();
   const [state, setState] = useState<State>();
@@ -42,6 +38,16 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
       const hclass = apiDoc.supportedClasses
         .ofIri(hypermedia.type.first())
         .first();
+      // const elements: Elements = [
+      //   {
+      //     id: hclass.iri,
+      //     data: { label: hclass.displayName },
+      //     position: { x: 0, y: 150 },
+      //     type: "input",
+      //     sourcePosition: Position.Right,
+      //     style: { borderRadius: "50%" },
+      //   },
+      // ];
       const properties = new Array<JSX.Element>();
       const members = new Array<JSX.Element>();
       let error = true;
@@ -52,6 +58,28 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
           const value = graph[prop.property.iri];
           if (value && value instanceof Array && value.length > 0) {
             const val = (value[0] || {}) as GraphValue;
+            // elements.push({
+            //   id: prop.iri,
+            //   type: "output",
+            //   data: {
+            //     label: prop.property.valuesOfType
+            //       .first()
+            //       .iri.replace(/.*#/, ""),
+            //   },
+            //   position: { x: 250, y: i * 60 },
+            //   targetPosition: Position.Left,
+            //   style: { borderRadius: "50%", width: "auto", fontSize: "8pt" },
+            // });
+            // elements.push({
+            //   id: `e${i + 1}`,
+            //   source: hclass.iri,
+            //   target: prop.iri,
+            //   type: "step",
+            //   label:
+            //     prop.property.displayName === ""
+            //       ? (prop as any).displayName
+            //       : prop.property.displayName,
+            // });
             properties.push(
               <NameValuePair
                 key={i++}
@@ -134,6 +162,7 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
         properties,
         members,
         error,
+        // elements,
       });
     };
     init();
@@ -145,7 +174,8 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
 
   return (
     <Box background="light-1" pad="medium" fill="horizontal">
-      <Heading level="4">
+
+      <Heading level="4" fill>
         <Box direction="row" gap="small">
           {"@id:"}
           <HydraAnchor iri={hypermedia.iri} withOperations>
@@ -177,7 +207,14 @@ const HydraHypermedia = ({ hypermedia }: Props) => {
             </Heading>
             <Box margin={{ top: "small" }}>{state.members}</Box>
           </Box>
-
+          {
+            // <Box height="medium">
+            //   <Heading level="5" margin="none">
+            //     Grafo
+            //   </Heading>
+            //   <ReactFlow elements={state.elements} />
+            // </Box>
+          }
           <Accordion margin={{ top: "small" }}>
             <AccordionPanel
               label={
@@ -205,6 +242,7 @@ ${JSON.stringify(state.graph, null, 2)}
           </Accordion>
         </>
       )}
+
     </Box>
   );
 };
